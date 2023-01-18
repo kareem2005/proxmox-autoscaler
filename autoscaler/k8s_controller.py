@@ -213,7 +213,7 @@ class NodeGroup:
         ret = self.v1.list_node()
         for node in ret.items:
             if self.node_group_label in node.metadata.labels:
-                if node.metadata.labels[self.node_group_label] == 'true' and cluster_utilization[node.metadata.name]:
+                if node.metadata.labels[self.node_group_label] == 'true' and node.metadata.name in cluster_utilization:
                     node_utilization = cluster_utilization[node.metadata.name]
                     node_utilization["cpu_allocatable"] = convert_cpu(node.status.allocatable.get("cpu"))
                     node_utilization["memory_allocatable"] = convert_memory(node.status.allocatable.get("memory"))
