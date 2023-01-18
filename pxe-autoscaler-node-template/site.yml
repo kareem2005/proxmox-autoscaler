@@ -1,0 +1,6 @@
+---
+- hosts: template
+  roles:
+  - common 
+  - k8s-deps
+  - add-self-signed-registry

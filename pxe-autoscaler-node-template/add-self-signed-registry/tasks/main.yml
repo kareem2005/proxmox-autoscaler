@@ -1,0 +1,11 @@
+---
+
+- name: add trusted registry to crio
+  template:
+    src: registry.kareem.conf.j2
+    dest: /etc/containers/registries.conf.d/010-registry-kareem.conf
+
+- name: restart crio
+  systemd:
+    name: crio
+    state: restarted

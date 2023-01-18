@@ -1,0 +1,9 @@
+---
+user: autoscaler
+ntp_server: 10.127.0.20
+
+gitlab_domain: gitlab.kareem.local
+gitlab_host: 10.99.0.100
+
+registry_domain: registry.kareem.local
+registry_host: 10.99.0.100

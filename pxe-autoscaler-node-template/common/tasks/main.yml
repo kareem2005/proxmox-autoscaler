@@ -1,0 +1,76 @@
+---
+
+- name: uninstall libselinux-python3
+  yum: 
+    name: libselinux-python3
+    state: removed
+
+- name: install libselinux-python
+  yum: 
+    name: libselinux-python 
+    state: present
+
+- name: create user "{{ user }}"
+  user: name="{{ user }}" append=yes state=present createhome=yes shell=/usr/bin/bash
+
+- name: add "{{ user}}" to sudoers
+  lineinfile:
+    dest: /etc/sudoers
+    line: '{{ user }} ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+    
+- name: setup keys for user "{{ user }}"
+  authorized_key: user="{{ user }}" key="{{ item }}"
+  with_file:
+    - ~/.ssh/id_rsa.pub
+
+- name: install basic tools
+  yum:
+    name:
+      - vim
+      - net-tools
+      - bind-utils
+      - tcpdump
+      - ntp
+      - telnet
+    
+- name: Create ntp.conf
+  template: src=ntp.conf.j2 dest=/etc/ntp.conf
+  notify: restart ntpd
+
+- name: Start ntpd
+  systemd:
+    name: ntpd
+    state: started
+    enabled: true
+
+- name: Set timezone
+  timezone:
+    name: Europe/Moscow
+
+- name: Set hostname
+  hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: Install cloud-init and qemu-agent
+  yum:
+    name:
+      - cloud-init
+      - qemu-guest-agent
+    state: present
+
+- name: set gitlab hostname to hosts
+  lineinfile:
+    dest: /etc/cloud/templates/hosts.redhat.tmpl
+    line: '{{ gitlab_domain }} {{ gitlab_host }}'
+
+- name: set registry hostname to hosts
+  lineinfile:
+    dest: /etc/cloud/templates/hosts.redhat.tmpl
+    line: '{{ registry_domain }} {{ registry_host }}'
+
+- name: allow qemu agent to do shell commands in vm
+  replace:
+    path: /etc/sysconfig/qemu-qa
+    regexp: '^BLACKLIST_RPC*$'
+    replace: 'BLACKLIST_RPC=guest-file-open,guest-file-close,guest-file-read,guest-file-write,guest-file-seek,guest-file-flush'
