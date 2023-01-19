@@ -20,8 +20,9 @@ class Watcher:
     def run(self):
         logging.info("Watching cluster")
         while True:
-            if self.node_group.is_need_scaling_up():
-                self.scaler.scale_up()
+            if self.scaler.get_can_scale_up():
+                if self.node_group.is_need_scaling_up():
+                    self.scaler.scale_up()
 
             elif self.scaler.get_can_scale_down():
                 if self.node_group.is_scaled():

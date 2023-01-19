@@ -138,7 +138,7 @@ class Scaler():
             logging.info("Scaler now cannot scale down")
 
     def get_can_scale_up(self):
-        return self.can_scale_down
+        return self.can_scale_up
 
     def set_can_scale_up(self, state):
         self.can_scale_up = state

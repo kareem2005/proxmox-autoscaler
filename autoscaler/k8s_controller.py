@@ -16,7 +16,7 @@ class KubernetesWatcher:
             for status in item.status.conditions:
                 if status.reason == "Unschedulable":
                     if "Insufficient cpu" in status.message or "Insufficient memory" in status.message:
-                        logging.warning(f"Found unschedulable pod {item.metadata.name} due {status.message}")
+                        #logging.warning(f"Found unschedulable pod {item.metadata.name} due {status.message}")
                         return True
         return False
 
