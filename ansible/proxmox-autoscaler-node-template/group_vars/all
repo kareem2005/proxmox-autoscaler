@@ -1,0 +1,9 @@
+---
+user: autoscaler
+ntp_server: 10.10.10.111
+
+gitlab_domain: gitlab.example.local
+gitlab_host: 10.10.10.100
+
+registry_domain: registry.example.local
+registry_host: 10.10.10.100

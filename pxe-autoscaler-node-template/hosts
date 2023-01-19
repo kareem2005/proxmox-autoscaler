@@ -1,2 +1,0 @@
-[template]
-pxe-autoscaler.node.template ansible_host=10.99.0.51 ansible_user=root

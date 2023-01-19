@@ -5,7 +5,7 @@ try:
     pxe_user = os.environ["PXE_USER"]
     pxe_password = os.environ["PXE_PASSWORD"]
 except KeyError:
-    pxe_host = "10.128.6.105"
+    pxe_host = "10.10.10.1"
     pxe_user = "root@pam"
     pxe_password = "t3mplat3"
 
