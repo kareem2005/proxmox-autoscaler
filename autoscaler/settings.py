@@ -1,9 +1,14 @@
-pxe_host = "10.128.6.105"
-pxe_user = "root@pam"
-pxe_password = "t3mplat3"
-#pxe_host = os.environ["PXE_HOST"]
-#pxe_user = os.environ["PXE_USER"]
-#pxe_password = os.environ["PXE_PASSWORD"]
+import os
+
+try:
+    pxe_host = os.environ["PXE_HOST"]
+    pxe_user = os.environ["PXE_USER"]
+    pxe_password = os.environ["PXE_PASSWORD"]
+except KeyError:
+    pxe_host = "10.128.6.105"
+    pxe_user = "root@pam"
+    pxe_password = "t3mplat3"
+
 pxe_autoscaled_node_template_vm = "autoscaler.tmpl"  # preconfigured template vm for autoscaler
 pxe_autoscaled_node_name = "autoscaler.node"  # autoscaled vm names in pxe (node-01, node-02 ...)
 pxe_autoscaled_node_network_mode = 'manual'  # manual or dhcp
