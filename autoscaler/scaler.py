@@ -56,6 +56,12 @@ class Scaler():
             else:
                 logging.error("Scaling up failed")
                 logging.warning("")
+                logging.info(f"Waiting {str(scale_up_delay_after_add)} secs for further scaling up "
+                             f"and {str(scale_down_delay_after_add)} secs for scaling down after scale up")
+                delay_up = threading.Timer(scale_up_delay_after_add, self.set_can_scale_up, args=[True])
+                delay_down = threading.Timer(scale_down_delay_after_add, self.set_can_scale_down, args=[True])
+                delay_up.start()
+                delay_down.start()
                 return False
 
     def scale_down(self):

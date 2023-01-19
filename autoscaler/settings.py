@@ -5,7 +5,7 @@ try:
     pxe_user = os.environ["PXE_USER"]
     pxe_password = os.environ["PXE_PASSWORD"]
 except KeyError:
-    pxe_host = "10.10.10.1"
+    pxe_host = "10.10.10.10"
     pxe_user = "root@pam"
     pxe_password = "t3mplat3"
 
@@ -18,7 +18,7 @@ pxe_autoscaled_node_ip_gateway = '10.99.0.1'  # ip gateway for manual network mo
 pxe_autoscaled_node_dns_server = '10.128.4.20'  # dns server for manual network mode
 node_group_label = "pxe-autoscaler/autoscaler-managed-node"  # label for autoscaling node label
 min_size = 0
-max_size = 4
+max_size = 5
 scan_interval = 15
 max_node_provision_time = 900  # 15 min TODO: time waiting scaled up node becomes ready
 scale_down_unneeded_time = 600  # time after unneeded node scales down
