@@ -16,7 +16,7 @@ class KubernetesWatcher:
             for status in item.status.conditions:
                 if status.reason == "Unschedulable":
                     if "Insufficient cpu" in status.message or "Insufficient memory" in status.message:
-                        #logging.warning(f"Found unschedulable pod {item.metadata.name} due {status.message}")
+                        logging.warning(f"Found unschedulable pod {item.metadata.name} due {status.message}")
                         return True
         return False
 
@@ -42,7 +42,7 @@ class NodeGroup:
                                                    self.set_unneeded_node_delay_elapsed,
                                                    args=[True])
         self.unneeded_node_delay_elapsed = False
-        # TODO: ??? nahua capacity
+
         self.capacity_cpu = node_cpu
         self.capacity_mem = node_memory
         self.__get_capacity()
