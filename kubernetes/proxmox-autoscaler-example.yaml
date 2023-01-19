@@ -4,6 +4,53 @@ kind: Namespace
 metadata:
   name: proxmox-autoscaler
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pxe-credentials
+  namespace: proxmox-autoscaler
+data:
+  PXE_HOST: "10.10.10.10"
+  PXE_USER: "root@pam"
+  PXE_PASSWORD: "t3mplat3"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: proxmox-autoscaler-settings
+  namespace: proxmox-autoscaler
+data:
+  settings: |
+    import os
+    try:
+      pxe_host = os.environ["PXE_HOST"]
+      pxe_user = os.environ["PXE_USER"]
+      pxe_password = os.environ["PXE_PASSWORD"]
+    except KeyError:
+      pxe_host = "10.10.10.10"
+      pxe_user = "root@pam"
+      pxe_password = "t3mplat3"
+    pxe_autoscaled_node_template_vm = "autoscaler.tmpl"  # preconfigured template vm for autoscaler
+    pxe_autoscaled_node_name = "autoscaler.node"  # autoscaled vm names in pxe (autoscaler.node-01, autoscaler.node-02 ...)
+    pxe_autoscaled_node_network_mode = 'manual'  # manual or dhcp
+    pxe_autoscaled_node_ip_pool = '10.10.10.11-10.10.10.19'  # ip range for manual network mode
+    pxe_autoscaled_node_ip_mask = '24'  # cidr notation network mask
+    pxe_autoscaled_node_ip_gateway = '10.10.10.1'  # ip gateway for manual network mode
+    pxe_autoscaled_node_dns_server = '10.10.10.1'  # dns server for manual network mode
+    node_group_label = "pxe-autoscaler/autoscaler-managed-node"  # label for autoscaling node label
+    min_size = 0
+    max_size = 5
+    scan_interval = 15
+    max_node_provision_time = 900  # 15 min TODO: time waiting scaled up node becomes ready
+    scale_down_unneeded_time = 600  # time after unneeded node scales down
+    scale_down_delay = 600  # time waiting after scaling down
+    scale_up_delay_after_add = 300
+    scale_down_delay_after_add = 600
+    scale_down_delay_after_error = 600  # time waiting after error while scaling down
+    scale_down_utilization_threshold = 50  # enables scaling down when node underutilizated at %
+    max_total_unready_percentage = 45  # TODO: disables scaler when % of nodes unready
+    ok_total_unready_count = 3  # TODO: disable scaler when more of 3 nodes unready
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,7 +67,7 @@ spec:
     spec:
       initContainers:
       - name: init-kubeadm
-        image: registry.example.local/proxmox-autoscaler/k8s-proxmox-autoscaler:main
+        image: registry.kareem.local/kareem/k8s-proxmox-autoscaler:main
         command: ["bash", "-c", "cp /hostbin/kubeadm /kubeadm && cp -r /kube-config/* /etc/kubernetes"]
         resources:
           limits:
@@ -37,7 +84,7 @@ spec:
           mountPath: "/etc/kubernetes"
       containers:
       - name: proxmox-autoscaler
-        image: registry.example.local/proxmox-autoscaler/k8s-proxmox-autoscaler:main
+        image: registry.kareem.local/kareem/k8s-proxmox-autoscaler:main
         imagePullPolicy: Always
         resources:
           limits:
@@ -48,6 +95,12 @@ spec:
           mountPath: "/usr/local/sbin"
         - name: kubeadm-config
           mountPath: "/etc/kubernetes"
+        - name: settings
+          mountPath: /usr/src/app/autoscaler/settings.py
+          subPath: settings
+        envFrom:
+          - configMapRef:
+              name: pxe-credentials
       nodeSelector:
         node-role.kubernetes.io/control-plane: ""
       tolerations:
@@ -66,6 +119,9 @@ spec:
             path: "/etc/kubernetes"
         - name: kubeadm-config
           emptyDir: {}
+        - name: settings
+          configMap:
+            name: proxmox-autoscaler-settings
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
