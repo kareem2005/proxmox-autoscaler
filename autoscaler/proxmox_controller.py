@@ -30,7 +30,7 @@ def get_scaled_vms_ip():
             for interface in vm_network['result']:
                 for ip in (interface['ip-addresses']):
                     if ip['ip-address-type'] == 'ipv4':
-                        vm_ips.append(['ip-address'])
+                        vm_ips.append(ip['ip-address'])
     return vm_ips
 
 
