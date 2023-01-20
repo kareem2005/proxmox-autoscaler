@@ -22,7 +22,7 @@ If cluster is scaled, proxmox-autoscaler checks autoscaled nodes utilization. If
 | | |
 | ------------------| ---------------- | 
 |**Proxmox Virtual Environment** host must be available from proxmox-autoscaler pods|proxmox-autoscaler works only with one pve host at that moment|
-|**Proxmox user alowed:** to , delete vm | |
+|**Proxmox user alowed:** | |
 | create, clone preconfigured template | |
 | exec commands via qemu-agent | |
 | delete vm | |
