@@ -13,6 +13,8 @@ class Scaler():
         self.node_group = node_group
         self.can_scale_down = True
         self.can_scale_up = True
+        self.can_clean_up = False
+        self.clean_delay = threading.Timer(pxe_vm_lost_cleanup_delay, self.set_can_clean_up, args=[True])
 
     def scale_up(self):
         logging.warning("Scaling up kubernetes cluster")
@@ -152,3 +154,48 @@ class Scaler():
             logging.info("Timeout done. Scaler now can scale up")
         else:
             logging.info("Scaler now cannot scale up")
+
+    def get_can_clean_up(self):
+        return self.can_clean_up
+
+    def set_can_clean_up(self, state):
+        self.can_clean_up = state
+        if self.can_clean_up:
+            logging.info("Timeout done. Scaler now start cleaning...")
+
+    def clean_up(self):
+        self.node_group.update_current_size()
+        nodes = self.node_group.nodes
+        vms = pc.get_scaled_vms()
+        for vm in vms:
+            if vm['name'] not in nodes:
+
+                if not self.get_can_clean_up():
+                    if not self.clean_delay.is_alive():
+                        self.clean_delay = threading.Timer(pxe_vm_lost_cleanup_delay, self.set_can_clean_up, args=[True])
+                        self.clean_delay.start()
+                        logging.info(f"Cleaning delay started for node {vm['name']}")
+                        return False
+                    return False
+                self.set_can_clean_up(False)
+
+                logging.warning(f"Removing lost autoscaled node {vm['name']}..")
+                not_ready_nodes = self.node_group.get_nodes(ready=False)
+                if vm['name'] in not_ready_nodes:
+                    self.node_group.drain_node(vm['name'])
+                    self.node_group.delete_node(vm['name'])
+
+                pxe_vm = pc.ProxmoxServer(cpu=self.node_group.capacity_cpu,
+                                          memory=self.node_group.capacity_mem,
+                                          ip_address_cidr='0.0.0.0/24')
+                pxe_vm.vmname = vm['name']
+                pxe_vm.remove()
+                logging.warning(f"Virtual machine {vm['name']} removed")
+                self.node_group.update_current_size()
+                return True
+
+        if self.clean_delay.is_alive():
+            logging.info(f"Cleaning delay canceled")
+            self.clean_delay.cancel()
+        return False
+

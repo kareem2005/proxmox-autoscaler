@@ -60,6 +60,7 @@ For example, *kubernetes/proxmox-autoscaler-example.yaml* creates ConfigMap with
 | max_size | 5 | Maximal autoscaling node group size |
 | scan_interval | 15 | (secs) Cluster watcher interval |
 | max_node_provision_time | 900 | (secs) TODO: time waiting scaled up node becomes ready |
+| pxe_vm_lost_cleanup_delay | 300  | (secs) Delay after lost or unready vm cleaning up |
 | scale_down_unneeded_time | 600 | (secs) Time after unneeded node scales down |
 | scale_down_delay | 600 | (secs) Time waiting after scaling down for further scaling down |
 | scale_up_delay_after_add | 300 | (secs) Time waiting after adding node for further scaling up |
@@ -78,4 +79,5 @@ For example, *kubernetes/proxmox-autoscaler-example.yaml* creates ConfigMap with
 **Core**
 - Proxmox cluster select node feature
 - Multipod autoscaler feature
-- Remove interrupted scale down VMs feature
+- Correct threads interruption
+- Watcher and scaler in different threads

@@ -35,7 +35,7 @@ class NodeGroup:
         self.k8s = KubernetesWatcher()
         self.v1 = client.CoreV1Api()
         self.nodes_ip_addresses = []
-        self.nodes = self.get_nodes(ready=True)
+        self.nodes = self.get_nodes(ready=True, log=True)
         self.current_size = len(self.nodes)
         self.redundant_node = ''
         self.unneeded_node_delay = threading.Timer(scale_down_unneeded_time,
@@ -55,7 +55,7 @@ class NodeGroup:
             self.capacity_cpu = ret.status.capacity['cpu']
             self.capacity_mem = round(mem/1024/1024)*1024
 
-    def get_nodes(self, ready=True):
+    def get_nodes(self, ready=True, log=False):
         ready = str(ready)
         nodes = []
         ip_addresses = []
@@ -66,7 +66,8 @@ class NodeGroup:
                 if item.metadata.labels[self.node_group_label] == 'true':
                     for status in item.status.conditions:
                         if status.type == "Ready" and status.status == ready:
-                            logging.info(f"{item.metadata.name} with state Ready - " + ready)
+                            if log:
+                                logging.info(f"{item.metadata.name} with state Ready - " + ready)
                             nodes.append(item.metadata.name)
 
                             for address in item.status.addresses:
@@ -81,13 +82,15 @@ class NodeGroup:
         self.current_size = len(self.nodes)
 
     def is_need_scaling_up(self):
-        if self.k8s.has_unschedulable_pods():
-            if self.current_size < self.max_size:
+        if self.current_size < self.min_size:
+            return True
+        if self.current_size < self.max_size:
+            if self.k8s.has_unschedulable_pods():
                 return True
             else:
-                logging.warning("Autoscaler reached maximum size. Cant scale")
                 return False
         else:
+            logging.warning("Autoscaler reached maximum size. Cant scale")
             return False
 
     def get_unneeded_node_delay_elapsed(self):
@@ -100,6 +103,9 @@ class NodeGroup:
         return True if self.current_size > self.min_size else False
 
     def can_scale_down(self):
+        if self.k8s.has_unschedulable_pods():
+            return False
+
         # checks utilization, if < setting value -> chooses node -> checks pod placement on other nodes > return true
         node_group_utilization = self.get_utilization()
         node_min_cpu = min(node_group_utilization, key=lambda x: x['cpu'])

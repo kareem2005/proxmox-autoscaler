@@ -29,4 +29,6 @@ class Watcher:
                     if self.node_group.can_scale_down():
                         self.scaler.scale_down()
 
+            self.scaler.clean_up()
+
             time.sleep(self.watching_interval)

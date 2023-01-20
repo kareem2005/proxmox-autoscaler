@@ -42,10 +42,11 @@ data:
     max_size = 5
     scan_interval = 15
     max_node_provision_time = 900  # 15 min TODO: time waiting scaled up node becomes ready
+    pxe_vm_lost_cleanup_delay = 300  # delay after lost or unready vm cleaning up
     scale_down_unneeded_time = 600  # time after unneeded node scales down
     scale_down_delay = 600  # time waiting after scaling down
-    scale_up_delay_after_add = 300
-    scale_down_delay_after_add = 600
+    scale_up_delay_after_add = 300  # Time waiting after adding node for further scaling up
+    scale_down_delay_after_add = 600  # Time waiting after adding node for scaling down
     scale_down_delay_after_error = 600  # time waiting after error while scaling down
     scale_down_utilization_threshold = 50  # enables scaling down when node underutilizated at %
     max_total_unready_percentage = 45  # TODO: disables scaler when % of nodes unready
