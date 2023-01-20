@@ -6,13 +6,12 @@ from autoscaler import watcher
 
 def kubernetes_setup():
     logging.info("Fetching kubeconfig")
-    #config.load_incluster_config()
+    config.load_incluster_config()
     '''
     Uncomment this for fetching kube config from local machine (for dev purposes)
 
     config.load_kube_config()
     '''
-    config.load_kube_config()
 
 
 def logging_setup():
